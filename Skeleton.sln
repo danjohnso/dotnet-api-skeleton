@@ -14,12 +14,19 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AFF380BF-EE87-4F4C-A22C-E82C636E8F62}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
-		app.bicep = app.bicep
 		Directory.Build.props = Directory.Build.props
 		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Skeleton.Email", "Skeleton.Email\Skeleton.Email.csproj", "{C56EEE82-F437-4CD1-8EFC-AC7E64B597B0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Skeleton.Identity", "Skeleton.Identity\Skeleton.Identity.csproj", "{451CD373-4AD5-192E-4EA4-EA5F15DB4DDD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Skeleton.EntityFrameworkCore.PostgreSQL", "Skeleton.EntityFrameworkCore.PostgreSQL\Skeleton.EntityFrameworkCore.PostgreSQL.csproj", "{8D6EF61B-F0DA-86B9-E8E2-26F992306418}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Skeleton.EntityFrameworkCore.SqlServer", "Skeleton.EntityFrameworkCore.SqlServer\Skeleton.EntityFrameworkCore.SqlServer.csproj", "{C54CFF06-7E76-38AD-0270-58223B28D1BB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Skeleton.EntityFrameworkCore", "Skeleton.EntityFrameworkCore\Skeleton.EntityFrameworkCore.csproj", "{B8EB9F80-A27D-DBC7-9EC2-4FD49F79EEC9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,6 +54,22 @@ Global
 		{C56EEE82-F437-4CD1-8EFC-AC7E64B597B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C56EEE82-F437-4CD1-8EFC-AC7E64B597B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C56EEE82-F437-4CD1-8EFC-AC7E64B597B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{451CD373-4AD5-192E-4EA4-EA5F15DB4DDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{451CD373-4AD5-192E-4EA4-EA5F15DB4DDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{451CD373-4AD5-192E-4EA4-EA5F15DB4DDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{451CD373-4AD5-192E-4EA4-EA5F15DB4DDD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D6EF61B-F0DA-86B9-E8E2-26F992306418}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D6EF61B-F0DA-86B9-E8E2-26F992306418}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D6EF61B-F0DA-86B9-E8E2-26F992306418}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D6EF61B-F0DA-86B9-E8E2-26F992306418}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C54CFF06-7E76-38AD-0270-58223B28D1BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C54CFF06-7E76-38AD-0270-58223B28D1BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C54CFF06-7E76-38AD-0270-58223B28D1BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C54CFF06-7E76-38AD-0270-58223B28D1BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8EB9F80-A27D-DBC7-9EC2-4FD49F79EEC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8EB9F80-A27D-DBC7-9EC2-4FD49F79EEC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8EB9F80-A27D-DBC7-9EC2-4FD49F79EEC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8EB9F80-A27D-DBC7-9EC2-4FD49F79EEC9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

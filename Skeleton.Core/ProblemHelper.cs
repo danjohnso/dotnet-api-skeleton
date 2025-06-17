@@ -34,10 +34,9 @@ namespace Skeleton.Core
             foreach (FieldInfo field in fields)
             {
                 object? value = field.GetValue(type);
-                if (value != null)
+                if (value != null && value is Problem valueProblem)
                 {
-                    Problem p = (Problem)value;
-                    problemCodes.Add(p.Code, p.Message);
+                    problemCodes.Add(valueProblem.Code, valueProblem.Message);
                 }
             }
         }

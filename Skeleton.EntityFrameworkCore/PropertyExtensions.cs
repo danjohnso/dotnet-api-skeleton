@@ -2,8 +2,11 @@ using Skeleton.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Skeleton.Data.Core
+namespace Skeleton.EntityFrameworkCore
 {
+    /// <summary>
+    /// Helpers for making fields consistantly stored in the database.
+    /// </summary>
     public static class PropertyExtensions
 	{
         public static PropertyBuilder HasPrecision(this PropertyBuilder propertyBuilder, byte precision, byte scale)

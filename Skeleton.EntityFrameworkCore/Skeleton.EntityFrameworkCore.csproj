@@ -3,15 +3,13 @@
   <PropertyGroup Label="Normalize stack trace file locations" Condition="$(BuildingInsideVisualStudio) != 'true'">
     <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))=./</PathMap>
   </PropertyGroup>
-  
+
   <ItemGroup>
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.6" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Skeleton.Core\Skeleton.Core.csproj" />
-    <ProjectReference Include="..\Skeleton.EntityFrameworkCore.PostgreSQL\Skeleton.EntityFrameworkCore.PostgreSQL.csproj" />
-    <ProjectReference Include="..\Skeleton.EntityFrameworkCore\Skeleton.EntityFrameworkCore.csproj" />
   </ItemGroup>
 
 </Project>

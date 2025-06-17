@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Skeleton.Data.Core
+namespace Skeleton.EntityFrameworkCore.PostgreSQL
 {
     public abstract class TrackableEntity : Entity
     {
@@ -18,8 +18,8 @@ namespace Skeleton.Data.Core
         {
             entity.MapEntity();
 
-            entity.Property(x => x.Created).ValueGeneratedOnAdd().HasDefaultValueSql("now()");
-            entity.Property(x => x.Modified).ValueGeneratedOnAdd().HasDefaultValueSql("now()");
+            entity.Property(x => x.Created).MapTimestamp();
+            entity.Property(x => x.Modified).MapTimestamp();
 
             entity.Property(x => x.IsDeleted).HasDefaultValue(false);
 

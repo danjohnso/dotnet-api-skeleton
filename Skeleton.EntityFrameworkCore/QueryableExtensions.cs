@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.Runtime.CompilerServices;
 
-namespace Skeleton.Data.Core
+namespace Skeleton.EntityFrameworkCore
 {
     public static class QueryableExtensions
     {

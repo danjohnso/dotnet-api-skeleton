@@ -5,7 +5,6 @@ using Azure.Storage.Blobs.Models;
 using Azure.Storage.Sas;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Skeleton.Business;
 
 namespace Skeleton.Business.Repositories
 {

@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Data;
 using System.Data.Common;
 
-namespace Skeleton.Data.Core
+namespace Skeleton.EntityFrameworkCore
 {
     public static class DbConnectionExtensions
     {

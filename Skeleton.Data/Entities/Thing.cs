@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Skeleton.Data.Core;
+using Skeleton.EntityFrameworkCore;
+using Skeleton.EntityFrameworkCore.PostgreSQL;
 
 namespace Skeleton.Data.Entities
 {

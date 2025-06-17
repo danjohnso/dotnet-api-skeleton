@@ -1,7 +1,6 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Skeleton.Data.Core
+namespace Skeleton.EntityFrameworkCore.PostgreSQL
 {
     public abstract class Entity
     {
@@ -15,9 +14,7 @@ namespace Skeleton.Data.Core
         {
             entity.HasKey(x => x.Id);
 
-            //https://www.npgsql.org/efcore/modeling/generated-properties.html?tabs=13%2Cefcore5#guiduuid-generation
-            entity.Property(x => x.Id).HasDefaultValueSql("gen_random_uuid()"); 
-
+            entity.Property(x => x.Id).MapPrimaryKey();
             entity.Property(x => x.RowVersion).IsRowVersion();
 
             return entity;

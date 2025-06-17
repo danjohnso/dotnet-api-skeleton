@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Skeleton.Data.Core;
+using Skeleton.EntityFrameworkCore;
+using Skeleton.EntityFrameworkCore.PostgreSQL;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Skeleton.Data.Entities
@@ -26,11 +27,11 @@ namespace Skeleton.Data.Entities
 
             entity.HasIndex(x => x.EmailAddress).IsUnique();
 
-            entity.Property(x => x.Created).ValueGeneratedOnAdd().HasDefaultValueSql("now()");
+            entity.Property(x => x.Created).MapTimestamp();
             entity.Property(x => x.EmailAddress).IsRequired().IsEmailAddress();
             entity.Property(x => x.FirstName).IsRequired().IsFirstName();
             entity.Property(x => x.LastName).IsRequired().IsLastName();
-            entity.Property(x => x.Modified).ValueGeneratedOnAdd().HasDefaultValueSql("now()");
+            entity.Property(x => x.Modified).MapTimestamp();
 
             return entity;
         }
