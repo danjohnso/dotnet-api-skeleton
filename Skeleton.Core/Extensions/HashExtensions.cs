@@ -48,7 +48,7 @@ namespace Skeleton.Core.Extensions
             byte[] bytes = Encoding.UTF8.GetBytes(input);
             byte[] hash = SHA512.HashData(bytes);
 
-            return BitConverter.ToString(hash).Replace("-", string.Empty);
+            return Convert.ToHexString(hash).Replace("-", string.Empty);
         }
     }
 }

@@ -21,7 +21,6 @@ namespace Skeleton.Core.Extensions
             return !a.IsEqualTo(b, comparison);
         }
 
-
         public static bool IsWhiteSpace(this string? input)
         {
             return string.IsNullOrWhiteSpace(input);
