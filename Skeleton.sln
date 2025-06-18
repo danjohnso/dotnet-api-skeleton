@@ -28,6 +28,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Skeleton.EntityFrameworkCor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Skeleton.EntityFrameworkCore", "Skeleton.EntityFrameworkCore\Skeleton.EntityFrameworkCore.csproj", "{B8EB9F80-A27D-DBC7-9EC2-4FD49F79EEC9}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Database", "Database", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -73,6 +75,13 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C53EEBA8-3AAE-4FFD-8DB6-C8F5B041AD35} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{451CD373-4AD5-192E-4EA4-EA5F15DB4DDD} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{8D6EF61B-F0DA-86B9-E8E2-26F992306418} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{C54CFF06-7E76-38AD-0270-58223B28D1BB} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{B8EB9F80-A27D-DBC7-9EC2-4FD49F79EEC9} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F7111367-EC42-489E-97FE-FD7E50594D81}
