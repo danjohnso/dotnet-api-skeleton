@@ -6,29 +6,20 @@ using Skeleton.Identity.Enums;
 
 namespace Skeleton.Identity.Entities
 {
-    public class AuditEvent
+    public class AuditEvent(Guid userId, AuditEventType eventType, string ipAddress, string triggeredBy = "Anonymous", string? message = null)
     {
-        public Guid Id { get; set; }
-        public Guid UserId { get; private set; }
-        public AuditEventType EventType { get; private set; }
-        public DateTime Timestamp { get; private set; }
-        public string? Message { get; set; }
-        public required string TriggeredBy { get; set; }
-        public string? IPAddress { get; private set; }
-        public User User { get; set; }
-
-        public static AuditEvent CreateAuditEvent(Guid userId, AuditEventType eventType, string ipAddress, string triggeredBy = "Anonymous", string message = null)
-        {
-            return new AuditEvent
-            {
-                UserId = userId,
-                Message = message,
-                EventType = eventType,
-	            TriggeredBy = triggeredBy,
-                IPAddress = ipAddress,
-                Timestamp = DateTime.UtcNow
-            };
-        }
+        public Guid Id { get; private set; }
+        public AuditEventType EventType { get; private set; } = eventType;
+        public string IPAddress { get; private set; } = ipAddress;
+        public string? Message { get; private set; } = message;
+        public DateTime TimeStamp { get; private set; } = DateTime.UtcNow;
+        /// <summary>
+        /// User or system that triggered the event
+        /// </summary>
+        public string TriggeredBy { get; private set; } = triggeredBy;
+        public Guid UserId { get; private set; } = userId;
+        
+        public User User { get; set; } = null!; // ef core will initialize if the queries are correct, this is a required relationship
     }
 
     internal static class AuditEventMapping

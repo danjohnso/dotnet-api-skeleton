@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using FluentValidation.Validators;
 using Skeleton.API.Core.Swashbuckle.FluentValidation.Core;
-using Skeleton.API.Core.Swashbuckle.FluentValidation.Core;
 
 namespace Skeleton.API.Core.Swashbuckle.FluentValidation
 {

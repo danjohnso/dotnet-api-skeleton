@@ -22,7 +22,7 @@ namespace Skeleton.Business.Services
                 return Result.NotFound(Problems.NotFound);
             }
 
-            bool isDeleted = await _azureStorageRepository.DeleteAsync(parentId, file.FileName);
+            bool isDeleted = await _azureStorageRepository.DeleteAsync(parentId.ToString(), file.FileName);
             if (isDeleted)
             {
                 _dataContext.AppFiles.Remove(file);
@@ -50,7 +50,7 @@ namespace Skeleton.Business.Services
                     return null;
                 }
 
-                Dictionary<string, string> downloadLinks = await _azureStorageRepository.GetLinksAsync(parentId, files.Select(x => x.FileName));
+                Dictionary<string, string> downloadLinks = await _azureStorageRepository.GetLinksAsync(parentId.ToString(), files.Select(x => x.FileName));
                 foreach (FileListModel file in files)
                 {
                     file.Link = downloadLinks[file.FileName];
@@ -67,7 +67,7 @@ namespace Skeleton.Business.Services
 
         public async Task<Result<string>> UploadAsync(Guid parentId, string fileName, Stream file, Guid userId)
         {
-            string? downloadUrl = await _azureStorageRepository.UploadAsync(parentId, fileName, file);
+            string? downloadUrl = await _azureStorageRepository.UploadAsync(parentId.ToString(), fileName, file);
             if (downloadUrl != null)
             {
                 AppFile entity = new()
@@ -80,7 +80,7 @@ namespace Skeleton.Business.Services
 
                 await _dataContext.SaveChangesAsync();
 
-                await _azureStorageRepository.UpdateMetadataAsync(parentId, fileName, new Dictionary<string, string>
+                await _azureStorageRepository.UpdateMetadataAsync(parentId.ToString(), fileName, new Dictionary<string, string>
                 {
                     { "app_file_id", entity.Id.ToString() }
                 });

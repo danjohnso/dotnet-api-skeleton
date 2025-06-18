@@ -10,7 +10,7 @@ namespace Skeleton.Identity
 	public static class IdentityDatabaseRegistration
     {
         /// <summary>
-        /// Adds references to PortalIdentityContext and the IPortalIdentityConnection
+        /// Adds references to AppIdentityContext
         /// </summary>
         /// <param name="services"></param>
         /// <param name="identityDbConnectionString"></param>
@@ -19,7 +19,6 @@ namespace Skeleton.Identity
         {
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-            services.AddScoped<UserService>();
             services.AddDbContext<AppIdentityContext>(options =>
             {
                 options.UseNpgsql(identityDbConnectionString, sqlOptions =>
@@ -45,24 +44,26 @@ namespace Skeleton.Identity
             services.AddAppIdentityData(identityDbConnectionString);
 
             // Identity services
-            services.TryAddScoped<IUserValidator<User>, UserValidator<User>>();
-            services.TryAddScoped<IPasswordValidator<User>, PasswordValidator<User>>();
-            services.TryAddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
-            services.TryAddScoped<ILookupNormalizer, UpperInvariantLookupNormalizer>();
-            services.TryAddScoped<IRoleValidator<User>, RoleValidator<User>>();
-            services.TryAddScoped<IdentityErrorDescriber>();
-            services.TryAddScoped<ISecurityStampValidator, SecurityStampValidator<User>>();
-            services.TryAddScoped<IUserClaimsPrincipalFactory<User>, UserClaimsPrincipalFactory<User, Role>>();
-            services.TryAddScoped<UserManager<User>, AspNetUserManager<User>>();
-            services.TryAddScoped<SignInManager<User>, SignInManager<User>>();
-            services.TryAddScoped<RoleManager<Role>, AspNetRoleManager<Role>>();
+            //services.TryAddScoped<IUserValidator<User>, UserValidator<User>>();
+            //services.TryAddScoped<IPasswordValidator<User>, PasswordValidator<User>>();
+            //services.TryAddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+            //services.TryAddScoped<ILookupNormalizer, UpperInvariantLookupNormalizer>();
+            //services.TryAddScoped<IRoleValidator<User>, RoleValidator<User>>();
+            //services.TryAddScoped<IdentityErrorDescriber>();
+            //services.TryAddScoped<ISecurityStampValidator, SecurityStampValidator<User>>();
+            //services.TryAddScoped<IUserClaimsPrincipalFactory<User>, UserClaimsPrincipalFactory<User>>();
+            //services.TryAddScoped<UserManager<User>, AspNetUserManager<User>>();
+            //services.TryAddScoped<SignInManager<User>, SignInManager<User>>();
+            
+            //no roles
+            //services.TryAddScoped<RoleManager<Role>, AspNetRoleManager<Role>>();
 
             //set options
             services.Configure(AppIdentityOptions.DefaultIdentitySetup);
 	        services.Configure<PasswordHasherOptions>(options => { options.IterationCount = AppIdentityOptions.HashIterationCount; });
 
             //return the builder
-            return new IdentityBuilder(typeof(User), typeof(Role), services)
+            return new IdentityBuilder(typeof(User), services)
                         .AddEntityFrameworkStores<AppIdentityContext>()
                         .AddUserManager<AppUserManager>()
 						.AddSignInManager<AppSignInManager>()

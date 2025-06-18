@@ -10,8 +10,8 @@ namespace Skeleton.Identity.Enums
         PasswordReset = 6,
         Activated = 7,
         Deactivated = 8,
-        UsernameReminderRequested = 9,
+        UserNameReminderRequested = 9,
         InvalidPasswordReset = 10,
-		UsernameChange = 11
+		UserNameChange = 11
     }
 }

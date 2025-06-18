@@ -1,11 +1,11 @@
-﻿using Skeleton.Business.Mappers;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Skeleton.Business.Mappers;
 using Skeleton.Business.Models;
 using Skeleton.Core;
 using Skeleton.Data;
-using Skeleton.Data.Core;
 using Skeleton.Data.Entities;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+using Skeleton.EntityFrameworkCore.PostgreSQL;
 
 namespace Skeleton.Business.Services
 {

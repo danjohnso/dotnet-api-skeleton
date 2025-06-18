@@ -7,10 +7,10 @@ namespace Skeleton.Identity.Entities
     public class PreviousPassword(string hash, Guid userId)
     {
         public Guid Id { get; private set; }
-        public required string PasswordHash { get; set; } = hash;
-        public Guid UserId { get; private set; } = userId;
         public DateTime Created { get; private set; }
-        public User User { get; set; }
+        public string PasswordHash { get; private set; } = hash;
+        public Guid UserId { get; private set; } = userId;
+        public User User { get; set; } = null!; // ef core will initialize if the queries are correct, this is a required relationship
     }
 
     internal static class PreviousPassworSkeletonpping

@@ -4,7 +4,7 @@ using Skeleton.Identity.Entities;
 namespace Skeleton.Identity
 {
     public class AppUserStore(AppIdentityContext ctx)
-        : UserStore<User, Role, AppIdentityContext, Guid>(ctx)
+        : UserOnlyStore<User, AppIdentityContext, Guid>(ctx)
     {
     }
 }

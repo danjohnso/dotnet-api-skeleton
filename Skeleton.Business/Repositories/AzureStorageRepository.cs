@@ -186,7 +186,7 @@ namespace Skeleton.Business.Repositories
         //    }
         //}
 
-        private async Task<string> GetLinkAsync(string containerName, string fileName)
+        public async Task<string> GetLinkAsync(string containerName, string fileName)
         {
             //recommended access method, requires system user to have an rbac role with Microsoft.Storage/storageAccounts/blobServices/generateUserDelegationKey
             UserDelegationKey key = await _blobServiceClient.GetUserDelegationKeyAsync(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddMinutes(_options.SASLifetimeMinutes));
@@ -204,7 +204,7 @@ namespace Skeleton.Business.Repositories
             return $"{_options.ServiceUri}{containerName}/{fileName}?{sasBuilder.ToSasQueryParameters(key, _options.AccountName)}";
         }
 
-        private async Task<Dictionary<string, string>> GetLinksAsync(string containerName, IEnumerable<string> fileNames)
+        public async Task<Dictionary<string, string>> GetLinksAsync(string containerName, IEnumerable<string> fileNames)
         {
             //recommended access method, rerquires system user to have an rbac role with Microsoft.Storage/storageAccounts/blobServices/generateUserDelegationKey
             UserDelegationKey key = await _blobServiceClient.GetUserDelegationKeyAsync(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddMinutes(_options.SASLifetimeMinutes));
