@@ -7,13 +7,12 @@ using Skeleton.Identity.Entities;
 
 namespace Skeleton.Identity
 {
-	public class AppSignInManager(AppUserManager userManager, IHttpContextAccessor contextAccessor, IUserClaimsPrincipalFactory<User> claimsFactory, IOptions<IdentityOptions> optionsAccessor, ILogger<SignInManager<User>> logger, IAuthenticationSchemeProvider schemes, IUserConfirmation<User> userConfirmation) 
-		: SignInManager<User>(userManager, contextAccessor, claimsFactory, optionsAccessor, logger, schemes, userConfirmation)
+	public class AppSignInManager(AppUserManager userManager, IHttpContextAccessor contextAccessor, IUserClaimsPrincipalFactory<User> claimsFactory, IOptions<IdentityOptions> optionsAccessor, ILogger<SignInManager<User>> logger, IAuthenticationSchemeProvider schemes) 
+		: SignInManager<User>(userManager, contextAccessor, claimsFactory, optionsAccessor, logger, schemes)
     {
         public override async Task<bool> CanSignInAsync(User user)
 		{
 			bool canSignIn = await base.CanSignInAsync(user);
-
 			if (canSignIn)
 			{
 				canSignIn = user.IsActive;

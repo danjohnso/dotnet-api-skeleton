@@ -1,18 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Skeleton.Identity.Enums;
 using Skeleton.Identity.Entities;
+using Skeleton.Identity.Enums;
+using System.Security.Cryptography;
 
 namespace Skeleton.Identity
 {
-	public class AppUserManager : UserManager<User>
+    public class AppUserManager : UserManager<User>
     {
         private const int PASSWORD_HISTORY_LIMIT = 3;
         private readonly IHttpContextAccessor _contextAccessor;
@@ -34,12 +31,14 @@ namespace Skeleton.Identity
         {
             IdentityResult result = await base.AccessFailedAsync(user);
 
+            string ipAddress = _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
+
             AppUserStore store = (AppUserStore)Store;
-            store.Context.Set<AuditEvent>().Add(AuditEvent.CreateAuditEvent(user.Id, AuditEventType.FailedLogin, _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString()));
+            store.Context.AuditEvents.Add(AuditEvent.CreateAuditEvent(user.Id, AuditEventType.FailedLogin, ipAddress));
 
             if (await IsLockedOutAsync(user))
             {
-                store.Context.Set<AuditEvent>().Add(AuditEvent.CreateAuditEvent(user.Id, AuditEventType.LockedOut, _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString()));
+                store.Context.AuditEvents.Add(AuditEvent.CreateAuditEvent(user.Id, AuditEventType.LockedOut, ipAddress));
             }
 
             await store.Context.SaveChangesAsync();
@@ -53,8 +52,10 @@ namespace Skeleton.Identity
 
             if (isSuccess)
             {
-	            AppUserStore store = (AppUserStore)Store;
-                store.Context.Set<AuditEvent>().Add(AuditEvent.CreateAuditEvent(user.Id, AuditEventType.Login, _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString(), user.Id.ToString()));
+                string ipAddress = _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
+
+                AppUserStore store = (AppUserStore)Store;
+                store.Context.AuditEvents.Add(AuditEvent.CreateAuditEvent(user.Id, AuditEventType.Login, ipAddress, user.Id.ToString()));
                 await store.Context.SaveChangesAsync();
             }
 
@@ -63,10 +64,10 @@ namespace Skeleton.Identity
 
         public override async Task<IdentityResult> ChangePasswordAsync(User user, string currentPassword, string newPassword)
         {
-	        AppUserStore store = (AppUserStore)Store;
+            AppUserStore store = (AppUserStore)Store;
             if (IsPreviousPassword(user, newPassword))
             {
-                store.Context.Set<AuditEvent>().Add(AuditEvent.CreateAuditEvent(user.Id, AuditEventType.InvalidPasswordReset, _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString(), user.Id.ToString(), "Attempted to use a previous password"));
+                store.Context.AuditEvents.Add(AuditEvent.CreateAuditEvent(user.Id, AuditEventType.InvalidPasswordReset, _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString(), user.Id.ToString(), "Attempted to use a previous password"));
                 await store.Context.SaveChangesAsync();
                 return IdentityResult.Failed(new IdentityError { Description = "Cannot reuse old password" });
             }
@@ -80,7 +81,7 @@ namespace Skeleton.Identity
             {
                 foreach (IdentityError error in result.Errors)
                 {
-                    store.Context.Set<AuditEvent>().Add(AuditEvent.CreateAuditEvent(user.Id, AuditEventType.InvalidPasswordReset, _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString(), user.Id.ToString(), error.Description));
+                    store.Context.AuditEvents.Add(AuditEvent.CreateAuditEvent(user.Id, AuditEventType.InvalidPasswordReset, _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString(), user.Id.ToString(), error.Description));
                 }
 
                 await store.Context.SaveChangesAsync();
@@ -91,10 +92,10 @@ namespace Skeleton.Identity
 
         public override async Task<IdentityResult> ResetPasswordAsync(User user, string token, string newPassword)
         {
-	        AppUserStore store = (AppUserStore)Store;
+            AppUserStore store = (AppUserStore)Store;
             if (IsPreviousPassword(user, newPassword))
             {
-                store.Context.Set<AuditEvent>().Add(AuditEvent.CreateAuditEvent(user.Id, AuditEventType.InvalidPasswordReset, _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString(), message: "Attempted to use a previous password"));
+                store.Context.AuditEvents.Add(AuditEvent.CreateAuditEvent(user.Id, AuditEventType.InvalidPasswordReset, _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString(), message: "Attempted to use a previous password"));
                 await store.Context.SaveChangesAsync();
                 return IdentityResult.Failed(new IdentityError { Description = "Cannot reuse old password" });
             }
@@ -108,7 +109,7 @@ namespace Skeleton.Identity
             {
                 foreach (IdentityError error in result.Errors)
                 {
-                    store.Context.Set<AuditEvent>().Add(AuditEvent.CreateAuditEvent(user.Id, AuditEventType.InvalidPasswordReset, _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString(), user.Id.ToString(), error.Description));
+                    store.Context.AuditEvents.Add(AuditEvent.CreateAuditEvent(user.Id, AuditEventType.InvalidPasswordReset, _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString(), user.Id.ToString(), error.Description));
                 }
 
                 await store.Context.SaveChangesAsync();
@@ -117,24 +118,24 @@ namespace Skeleton.Identity
             return result;
         }
 
-		public override async Task<IdentityResult> CreateAsync(User user)
-		{
-			IdentityResult result = await base.CreateAsync(user);
+        public override async Task<IdentityResult> CreateAsync(User user)
+        {
+            IdentityResult result = await base.CreateAsync(user);
 
-			//only applies if we have a hash (local accounts)
-			if (result.Succeeded &&!string.IsNullOrWhiteSpace(user.PasswordHash))
-			{
-				result = await AddToPreviousPasswordsAsync(user, user.PasswordHash, false);
-			}
+            //only applies if we have a hash (local accounts)
+            if (result.Succeeded && !string.IsNullOrWhiteSpace(user.PasswordHash))
+            {
+                result = await AddToPreviousPasswordsAsync(user, user.PasswordHash, false);
+            }
 
-			return result;
-		}
+            return result;
+        }
 
         #endregion
 
         #region - Extensions -
 
-	    /// <summary>
+        /// <summary>
         /// Audit eventing for reset password token
         /// </summary>
         /// <param name="user"></param>
@@ -142,7 +143,7 @@ namespace Skeleton.Identity
         /// <returns></returns>
         public async Task<string> GeneratePasswordResetTokenAsync(User user, string actingUser = "Anonymous")
         {
-	        string token = await base.GeneratePasswordResetTokenAsync(user);
+            string token = await base.GeneratePasswordResetTokenAsync(user);
 
             user.AuditEvents.Add(AuditEvent.CreateAuditEvent(user.Id, AuditEventType.NewPasswordLinkRequested, _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString(), actingUser));
 
@@ -154,7 +155,7 @@ namespace Skeleton.Identity
         public async Task<User> GetUsernameReminderAsync(string email, string actingUser = "Anonymous")
         {
             AppUserStore store = (AppUserStore)Store;
-            User user = store.Users.FirstOrDefault(x => x.Email == email);
+            User? user = store.Users.FirstOrDefault(x => x.Email == email);
             if (user != null)
             {
                 user.AuditEvents.Add(AuditEvent.CreateAuditEvent(user.Id, AuditEventType.UsernameReminderRequested, _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString(), actingUser));
@@ -173,52 +174,48 @@ namespace Skeleton.Identity
             int minLength = Options.Password.RequiredLength;
 
             const string allowedChars = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ0123456789!@#$^*<>_-";
-	        const string allowedLowerChars = "abcdefghijkmnopqrstuvwxyz";
-	        const string allowedUpperChars = "ABCDEFGHJKLMNOPQRSTUVWXYZ";
-	        const string allowedNumeralChars = "0123456789";
-	        const string allowedSpecialChars = "!@#$^*<>_-";
+            const string allowedLowerChars = "abcdefghijkmnopqrstuvwxyz";
+            const string allowedUpperChars = "ABCDEFGHJKLMNOPQRSTUVWXYZ";
+            const string allowedNumeralChars = "0123456789";
+            const string allowedSpecialChars = "!@#$^*<>_-";
 
-            char[] chars = new char[minLength];
+            //char[] chars = new char[minLength];
 
-            using (SecureRandom rd = new SecureRandom())
+
+            string chars = RandomNumberGenerator.GetString(allowedChars, minLength);
+            ReadOnlySpan<char> charsSpan = chars.AsSpan();
+
+            foreach (IPasswordValidator<User> validator in PasswordValidators)
             {
-                for (int i = 0; i < minLength; i++)
+                IdentityResult result = await validator.ValidateAsync(this, user, chars);
+                while (!result.Succeeded)
                 {
-                    chars[i] = allowedChars[rd.Next(0, allowedChars.Length)];
-                }
-
-                foreach (IPasswordValidator<User> validator in PasswordValidators)
-                {
-                    IdentityResult result = await validator.ValidateAsync(this, user, new string(chars));
-                    while (!result.Succeeded)
+                    if (result.Errors.Contains(ErrorDescriber.PasswordRequiresDigit()) && allowedNumeralChars.IndexOfAny(charsSpan) == -1)
                     {
-                        if (result.Errors.Contains(ErrorDescriber.PasswordRequiresDigit()) && allowedNumeralChars.IndexOfAny(chars) == -1)
-                        {
-                            chars[rd.Next(0, minLength)] = allowedNumeralChars[rd.Next(0, allowedNumeralChars.Length)];
-                        }
-
-                        if (result.Errors.Contains(ErrorDescriber.PasswordRequiresLower()) && allowedLowerChars.IndexOfAny(chars) == -1)
-                        {
-                            chars[rd.Next(0, minLength)] = allowedLowerChars[rd.Next(0, allowedLowerChars.Length)];
-                        }
-
-                        if (result.Errors.Contains(ErrorDescriber.PasswordRequiresNonAlphanumeric()) && allowedSpecialChars.IndexOfAny(chars) == -1)
-                        {
-                            chars[rd.Next(0, minLength)] = allowedSpecialChars[rd.Next(0, allowedSpecialChars.Length)];
-                        }
-
-                        if (result.Errors.Contains(ErrorDescriber.PasswordRequiresUpper()) && allowedUpperChars.IndexOfAny(chars) == -1)
-                        {
-                            chars[rd.Next(0, minLength)] = allowedUpperChars[rd.Next(0, allowedUpperChars.Length)];
-                        }
-
-                        if (result.Errors.Contains(ErrorDescriber.PasswordRequiresUniqueChars(Options.Password.RequiredUniqueChars)))
-                        {
-                            chars[rd.Next(0, minLength)] = allowedChars[rd.Next(0, allowedChars.Length)];
-                        }
-
-                        result = await validator.ValidateAsync(this, user, new string(chars));
+                        chars[rd.Next(0, minLength)] = allowedNumeralChars[rd.Next(0, allowedNumeralChars.Length)];
                     }
+
+                    if (result.Errors.Contains(ErrorDescriber.PasswordRequiresLower()) && allowedLowerChars.IndexOfAny(chars) == -1)
+                    {
+                        chars[rd.Next(0, minLength)] = allowedLowerChars[rd.Next(0, allowedLowerChars.Length)];
+                    }
+
+                    if (result.Errors.Contains(ErrorDescriber.PasswordRequiresNonAlphanumeric()) && allowedSpecialChars.IndexOfAny(chars) == -1)
+                    {
+                        chars[rd.Next(0, minLength)] = allowedSpecialChars[rd.Next(0, allowedSpecialChars.Length)];
+                    }
+
+                    if (result.Errors.Contains(ErrorDescriber.PasswordRequiresUpper()) && allowedUpperChars.IndexOfAny(chars) == -1)
+                    {
+                        chars[rd.Next(0, minLength)] = allowedUpperChars[rd.Next(0, allowedUpperChars.Length)];
+                    }
+
+                    if (result.Errors.Contains(ErrorDescriber.PasswordRequiresUniqueChars(Options.Password.RequiredUniqueChars)))
+                    {
+                        chars[rd.Next(0, minLength)] = allowedChars[rd.Next(0, allowedChars.Length)];
+                    }
+
+                    result = await validator.ValidateAsync(this, user, new string(chars));
                 }
             }
 
@@ -229,13 +226,13 @@ namespace Skeleton.Identity
 
         #region - Private Helpers -
 
-        private bool IsPreviousPassword(User user, string newPassword)
+        private Task<bool> IsPreviousPassword(User user, string newPassword)
         {
             return user.PreviousPasswords
                     .OrderByDescending(x => x.Created)
                     .Select(x => x.PasswordHash)
                     .Take(PASSWORD_HISTORY_LIMIT)
-                    .Any(x => PasswordHasher.VerifyHashedPassword(user, x, newPassword) != PasswordVerificationResult.Failed);
+                    .AnyAsync(x => PasswordHasher.VerifyHashedPassword(user, x, newPassword) != PasswordVerificationResult.Failed);
         }
 
         private async Task<IdentityResult> AddToPreviousPasswordsAsync(User user, string password, bool updateLastChanged)
@@ -246,11 +243,11 @@ namespace Skeleton.Identity
                 user.AuditEvents.Add(AuditEvent.CreateAuditEvent(user.Id, AuditEventType.PasswordReset, _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString(), user.Id.ToString()));
             }
 
-			user.PreviousPasswords.Add(new PreviousPassword(password, user.Id));
-            
-            return await UpdateAsync(user);
-		}
+            user.PreviousPasswords.Add(new PreviousPassword(password, user.Id));
 
-		#endregion
-	}
+            return await UpdateAsync(user);
+        }
+
+        #endregion
+    }
 }

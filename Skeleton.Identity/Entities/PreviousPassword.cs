@@ -1,19 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Skeleton.EntityFrameworkCore.PostgreSQL;
 
 namespace Skeleton.Identity.Entities
 {
     public class PreviousPassword(string hash, Guid userId)
     {
         public Guid Id { get; private set; }
-
         public required string PasswordHash { get; set; } = hash;
-        
         public Guid UserId { get; private set; } = userId;
-
         public DateTime Created { get; private set; }
-
-        public required User User { get; set; }
+        public User User { get; set; }
     }
 
     internal static class PreviousPassworSkeletonpping
@@ -23,8 +20,8 @@ namespace Skeleton.Identity.Entities
 			entity.ToTable(nameof(PreviousPassword));
 	        entity.HasKey(x => x.Id);
 
-	        entity.Property(x => x.Id).ValueGeneratedOnAdd().HasDefaultValueSql("NEWID()");
-			entity.Property(x => x.Created).ValueGeneratedOnAdd().HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(x => x.Id).MapPrimaryKey();
+            entity.Property(x => x.Created).MapTimestamp();
 
             return entity;
         }
