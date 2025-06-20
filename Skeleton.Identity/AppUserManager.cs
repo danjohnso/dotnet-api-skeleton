@@ -11,7 +11,7 @@ using System.Security.Cryptography;
 namespace Skeleton.Identity
 {
     public class AppUserManager(
-        IHttpContextAccessor _contextAccessor, 
+        IHttpContextAccessor _contextAccessor,
         IUserStore<User> _userStore,
         IOptions<IdentityOptions> _optionsAccessor,
         IPasswordHasher<User> _passwordHasher,
@@ -24,7 +24,7 @@ namespace Skeleton.Identity
     ) : UserManager<User>(_userStore, _optionsAccessor, _passwordHasher, _userValidators, _passwordValidators, _keyNormalizer, _errors, _services, _logger)
     {
         private const int PasswordHistoryLimit = 3;
-        private const string UnknownUserId = "Anonymous";
+        internal const string UnknownUserId = "Anonymous";
         protected internal new AppUserStore Store => (AppUserStore)base.Store;
 
         #region - Overrides -
@@ -40,11 +40,11 @@ namespace Skeleton.Identity
 
             string ipAddress = _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
 
-            Store.Context.AuditEvents.Add(new AuditEvent(user.Id, AuditEventType.FailedLogin, ipAddress));
+            Store.Context.AuditEvents.Add(new AuditEvent() { UserId = user.Id, EventType = AuditEventType.FailedLogin, IPAddress = ipAddress, TriggeredBy = UnknownUserId });
 
             if (await IsLockedOutAsync(user))
             {
-                Store.Context.AuditEvents.Add(new AuditEvent(user.Id, AuditEventType.LockedOut, ipAddress));
+                Store.Context.AuditEvents.Add(new AuditEvent() { UserId = user.Id, EventType = AuditEventType.LockedOut, IPAddress = ipAddress, TriggeredBy = UnknownUserId });
             }
 
             await Store.Context.SaveChangesAsync();
@@ -60,7 +60,7 @@ namespace Skeleton.Identity
             {
                 string ipAddress = _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
 
-                Store.Context.AuditEvents.Add(new AuditEvent(user.Id, AuditEventType.Login, ipAddress, user.Id.ToString()));
+                Store.Context.AuditEvents.Add(new AuditEvent() { UserId = user.Id, EventType = AuditEventType.Login, IPAddress = ipAddress, TriggeredBy = user.Id.ToString() });
                 await Store.Context.SaveChangesAsync();
             }
 
@@ -73,7 +73,7 @@ namespace Skeleton.Identity
 
             if (IsPreviousPassword(user, newPassword))
             {
-                Store.Context.AuditEvents.Add(new AuditEvent(user.Id, AuditEventType.InvalidPasswordReset, ipAddress, user.Id.ToString(), "Attempted to use a previous password"));
+                Store.Context.AuditEvents.Add(new AuditEvent() { UserId = user.Id, EventType = AuditEventType.InvalidPasswordReset, IPAddress = ipAddress, TriggeredBy = user.Id.ToString(), Message = "Attempted to use a previous password" });
                 await Store.Context.SaveChangesAsync();
                 return IdentityResult.Failed(new IdentityError { Description = "Cannot reuse old password" });
             }
@@ -87,7 +87,7 @@ namespace Skeleton.Identity
             {
                 foreach (IdentityError error in result.Errors)
                 {
-                    Store.Context.AuditEvents.Add(new AuditEvent(user.Id, AuditEventType.InvalidPasswordReset, ipAddress, user.Id.ToString(), error.Description));
+                    Store.Context.AuditEvents.Add(new AuditEvent() { UserId = user.Id, EventType = AuditEventType.InvalidPasswordReset, IPAddress = ipAddress, TriggeredBy = user.Id.ToString(), Message = error.Description });
                 }
 
                 await Store.Context.SaveChangesAsync();
@@ -102,7 +102,7 @@ namespace Skeleton.Identity
 
             if (IsPreviousPassword(user, newPassword))
             {
-                Store.Context.AuditEvents.Add(new AuditEvent(user.Id, AuditEventType.InvalidPasswordReset, ipAddress, message: "Attempted to use a previous password"));
+                Store.Context.AuditEvents.Add(new AuditEvent() { UserId = user.Id, EventType = AuditEventType.InvalidPasswordReset, IPAddress = ipAddress, TriggeredBy = UnknownUserId, Message = "Attempted to use a previous password" });
                 await Store.Context.SaveChangesAsync();
                 return IdentityResult.Failed(new IdentityError { Description = "Cannot reuse old password" });
             }
@@ -116,7 +116,7 @@ namespace Skeleton.Identity
             {
                 foreach (IdentityError error in result.Errors)
                 {
-                    Store.Context.AuditEvents.Add(new AuditEvent(user.Id, AuditEventType.InvalidPasswordReset, ipAddress, user.Id.ToString(), error.Description));
+                    Store.Context.AuditEvents.Add(new AuditEvent() { UserId = user.Id, EventType = AuditEventType.InvalidPasswordReset, IPAddress = ipAddress, TriggeredBy = user.Id.ToString(), Message = error.Description });
                 }
 
                 await Store.Context.SaveChangesAsync();
@@ -154,7 +154,7 @@ namespace Skeleton.Identity
             string token = await base.GeneratePasswordResetTokenAsync(user);
 
             string ipAddress = _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
-            user.AuditEvents.Add(new AuditEvent(user.Id, AuditEventType.NewPasswordLinkRequested, ipAddress, actingUser));
+            user.AuditEvents.Add(new AuditEvent() { UserId = user.Id, EventType = AuditEventType.NewPasswordLinkRequested, IPAddress = ipAddress, TriggeredBy = actingUser });
 
             await UpdateAsync(user);
 
@@ -167,7 +167,7 @@ namespace Skeleton.Identity
             if (user != null)
             {
                 string ipAddress = _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
-                user.AuditEvents.Add(new AuditEvent(user.Id, AuditEventType.UserNameReminderRequested, ipAddress, actingUser));
+                user.AuditEvents.Add(new AuditEvent() { UserId = user.Id, EventType = AuditEventType.UserNameReminderRequested, IPAddress = ipAddress, TriggeredBy = actingUser });
                 await UpdateAsync(user);
             }
 
@@ -257,10 +257,10 @@ namespace Skeleton.Identity
             if (updateLastChanged)
             {
                 user.LastPasswordChange = DateTime.UtcNow;
-                user.AuditEvents.Add(new AuditEvent(user.Id, AuditEventType.PasswordReset, ipAddress, user.Id.ToString()));
+                user.AuditEvents.Add(new AuditEvent() { UserId = user.Id, EventType = AuditEventType.PasswordReset, IPAddress = ipAddress, TriggeredBy = user.Id.ToString() });
             }
 
-            user.PreviousPasswords.Add(new PreviousPassword(passwordHash, user.Id));
+            user.PreviousPasswords.Add(new PreviousPassword() { PasswordHash = passwordHash, UserId = user.Id });
 
             return await UpdateAsync(user);
         }

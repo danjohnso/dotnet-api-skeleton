@@ -4,12 +4,12 @@ using Skeleton.EntityFrameworkCore.PostgreSQL;
 
 namespace Skeleton.Identity.Entities
 {
-    public class PreviousPassword(string hash, Guid userId)
+    public class PreviousPassword
     {
         public Guid Id { get; private set; }
         public DateTime Created { get; private set; }
-        public string PasswordHash { get; private set; } = hash;
-        public Guid UserId { get; private set; } = userId;
+        public required string PasswordHash { get; set; }
+        public Guid UserId { get; set; }
         public User User { get; set; } = null!; // ef core will initialize if the queries are correct, this is a required relationship
     }
 

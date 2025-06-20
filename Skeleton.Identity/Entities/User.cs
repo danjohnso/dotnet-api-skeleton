@@ -47,32 +47,27 @@ namespace Skeleton.Identity.Entities
             entityBuilder.HasMany(e => e.Tokens)
                          .WithOne()
                          .HasForeignKey(ut => ut.UserId)
-                         .IsRequired()
-                         .OnDelete(DeleteBehavior.Cascade);
+                         .IsRequired();
 
             entityBuilder.HasMany(e => e.Logins)
                          .WithOne()
                          .HasForeignKey(e => e.UserId)
-                         .IsRequired()
-                         .OnDelete(DeleteBehavior.Cascade);
+                         .IsRequired();
 
             entityBuilder.HasMany(e => e.Claims)
                          .WithOne()
                          .HasForeignKey(e => e.UserId)
-                         .IsRequired()
-                         .OnDelete(DeleteBehavior.Cascade);
+                         .IsRequired();
 
             entityBuilder.HasMany(e => e.AuditEvents)
                          .WithOne(x => x.User)
                          .HasForeignKey(e => e.UserId)
-                         .IsRequired()
-                         .OnDelete(DeleteBehavior.Cascade);
+                         .IsRequired();
 
             entityBuilder.HasMany(e => e.PreviousPasswords)
                          .WithOne(x => x.User)
                          .HasForeignKey(e => e.UserId)
-                         .IsRequired()
-                         .OnDelete(DeleteBehavior.Cascade);
+                         .IsRequired();
 
             return entityBuilder;
         }
