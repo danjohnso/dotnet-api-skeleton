@@ -13,6 +13,12 @@ If you want to use with the Identity project and share the 'User' entity, below 
         entity.ToTable(nameof(User));
         entity.HasKey(u => u.Id);
     });
+
+    modelBuilder.Ignore<IdentityUserLogin<Guid>>();
+    modelBuilder.Ignore<IdentityUserClaim<Guid>>();
+    modelBuilder.Ignore<IdentityUserToken<Guid>>();
+    modelBuilder.Ignore<AuditEvent>();
+    modelBuilder.Ignore<PreviousPassword>();
 ```
 - Override SaveChanges to prevent modifications since Identity should be managing changes to 'User'
 ```csharp
@@ -43,6 +49,8 @@ If you want to use with the Identity project and share the 'User' entity, below 
 ```csharp
     context.Users.AsNoTracking();
 ```
+-Delete the addition of the User table from your first migration in DataContext
+
 
 The above works when the tables are all in the same database, if you ened to split the databases this can still work.  
 One option would be to map 'User' to a cross database view in the DataContext
