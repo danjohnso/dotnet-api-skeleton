@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace Skeleton.Core.Extensions
+namespace Skeleton.SimpleJwt.Extensions
 {
-    public static class StringExtensions
+    internal static class StringExtensions
     {
         public static bool IsEqualTo(this string? a, string? b, StringComparison comparison = StringComparison.OrdinalIgnoreCase)
         {

@@ -6,6 +6,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Skeleton.Data.Entities
 {
+    /// <summary>
+    /// This is one option if you don't use identity to maintain a user table, see <see cref="UserProfile"/> for a way top linke when using Identity
+    /// </summary>
     public class User : Entity
     {
         public DateTime Created { get; private set; }

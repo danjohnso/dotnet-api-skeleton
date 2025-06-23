@@ -30,6 +30,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Skeleton.EntityFrameworkCor
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Database", "Database", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Skeleton.SimpleJwt", "Skeleton.SimpleJwt\Skeleton.SimpleJwt.csproj", "{6A7328AD-20E4-1B00-76FB-928B2B73F3BB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -72,6 +74,10 @@ Global
 		{B8EB9F80-A27D-DBC7-9EC2-4FD49F79EEC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B8EB9F80-A27D-DBC7-9EC2-4FD49F79EEC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B8EB9F80-A27D-DBC7-9EC2-4FD49F79EEC9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A7328AD-20E4-1B00-76FB-928B2B73F3BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A7328AD-20E4-1B00-76FB-928B2B73F3BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A7328AD-20E4-1B00-76FB-928B2B73F3BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A7328AD-20E4-1B00-76FB-928B2B73F3BB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

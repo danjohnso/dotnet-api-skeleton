@@ -2,9 +2,9 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Skeleton.Core.Extensions
+namespace Skeleton.SimpleJwt.Extensions
 {
-    public static class HashExtensions
+    internal static class HashExtensions
     {
         public static byte[]? Sha512(this byte[]? input)
         {
