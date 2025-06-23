@@ -14,6 +14,7 @@ namespace Skeleton.Data.Entities
         public required string DisplayName { get; set; }
 
         public Guid UserId { get; set; }
+        //Note this should reference the Identity.Entities.User class, there won't be a User class in this project
         public User User { get; set; } = null!;
     }
 
