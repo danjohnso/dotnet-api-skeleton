@@ -32,7 +32,7 @@ If you want to use with the Identity project and share the 'User' entity, here i
 public DbSet<UserProfile> Users { get; set; }
 ```
 
-- Delete the addition of the User table from your next migration in DataContext
+- Delete the addition of the User table from your next migration in DataContext, both the Up and the Down methods
  
 **NOTE: Delete from the migration file but NOT from the context snapshot file.  You don't want to fight this on every migration**
 

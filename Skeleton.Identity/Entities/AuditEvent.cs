@@ -12,7 +12,7 @@ namespace Skeleton.Identity.Entities
         public AuditEventType EventType { get; set; }
         public required string IPAddress { get; set; }
         public string? Message { get; set; }
-        public DateTime TimeStamp { get; private set; } = DateTime.UtcNow;
+        public DateTime TimeStamp { get; private set; }
         /// <summary>
         /// User or system that triggered the event
         /// </summary>
@@ -28,8 +28,9 @@ namespace Skeleton.Identity.Entities
         {
 			entityBuilder.ToTable(nameof(AuditEvent));
             entityBuilder.HasKey(x => x.Id);
-            entityBuilder.Property(x => x.Id).MapPrimaryKey();
 
+            entityBuilder.Property(x => x.TimeStamp).MapTimestamp();
+            entityBuilder.Property(x => x.Id).MapPrimaryKey();
             entityBuilder.Property(x => x.TriggeredBy).IsRequired().HasMaxLength(255);
             entityBuilder.Property(x => x.Message).HasMaxLength(1000);
             entityBuilder.Property(x => x.IPAddress).IsRequired().IsIPAddress();

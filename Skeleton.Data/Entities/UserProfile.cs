@@ -13,7 +13,6 @@ namespace Skeleton.Data.Entities
         public string? AvatarUrl { get; set; }
         public required string DisplayName { get; set; }
 
-        public Guid UserId { get; set; }
         //Note this should reference the Identity.Entities.User class, there won't be a User class in this project
         public User User { get; set; } = null!;
     }
@@ -31,7 +30,7 @@ namespace Skeleton.Data.Entities
             //one to one to link to the user
             entity.HasOne(x => x.User)
                 .WithOne()
-                .HasForeignKey<UserProfile>(x => x.UserId)
+                .HasForeignKey<UserProfile>(x => x.Id)
                 .IsRequired();
 
             return entity;
