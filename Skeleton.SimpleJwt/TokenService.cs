@@ -76,6 +76,8 @@ namespace Skeleton.SimpleJwt
                 return Results.Unauthorized();
             }
 
+            await _userManager.RecordLoginAsync(user);
+
             TokenResponse tokens = await GenerateTokensAsync(user);
             return Results.Ok(tokens);
         }
@@ -112,6 +114,8 @@ namespace Skeleton.SimpleJwt
                 _logger.LogWarning("Signin failed for {Email}: {Reason}", user.Email, result.IsLockedOut ? "Locked" : "Not Allowed");
                 return Results.Unauthorized();
             }
+
+            await _userManager.RecordLoginAsync(user);
 
             TokenResponse tokens = await GenerateTokensAsync(user);
             return Results.Ok(tokens);

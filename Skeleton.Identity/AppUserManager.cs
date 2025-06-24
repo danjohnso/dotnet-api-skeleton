@@ -25,6 +25,8 @@ namespace Skeleton.Identity
     {
         private const int PasswordHistoryLimit = 3;
         internal const string UnknownUserId = "Anonymous";
+
+        //wish there was a better way to get this
         protected internal new AppUserStore Store => (AppUserStore)base.Store;
 
         #region - Overrides -
@@ -50,21 +52,6 @@ namespace Skeleton.Identity
             await Store.Context.SaveChangesAsync();
 
             return result;
-        }
-
-        public override async Task<bool> CheckPasswordAsync(User user, string password)
-        {
-            bool isSuccess = await base.CheckPasswordAsync(user, password);
-
-            if (isSuccess)
-            {
-                string ipAddress = _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
-
-                Store.Context.AuditEvents.Add(new AuditEvent() { UserId = user.Id, EventType = AuditEventType.Login, IPAddress = ipAddress, TriggeredBy = user.Id.ToString() });
-                await Store.Context.SaveChangesAsync();
-            }
-
-            return isSuccess;
         }
 
         public override async Task<IdentityResult> ChangePasswordAsync(User user, string currentPassword, string newPassword)
@@ -125,15 +112,13 @@ namespace Skeleton.Identity
             return result;
         }
 
-        public override async Task<IdentityResult> CreateAsync(User user)
+        public override async Task<IdentityResult> AddPasswordAsync(User user, string password)
         {
-            IdentityResult result = await base.CreateAsync(user);
-
-            //only applies if we have a hash (local accounts)
-            if (result.Succeeded && user.PasswordHash.IsNotWhiteSpace())
+            IdentityResult result = await base.AddPasswordAsync(user, password);
+            if (result.Succeeded)
             {
                 string ipAddress = _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
-                result = await AddToPreviousPasswordsAsync(user, user.PasswordHash, ipAddress, false);
+                result = await AddToPreviousPasswordsAsync(user, PasswordHasher.HashPassword(user, password), ipAddress, false);
             }
 
             return result;
@@ -172,6 +157,16 @@ namespace Skeleton.Identity
             }
 
             return user;
+        }
+
+        public async Task RecordLoginAsync(User user)
+        {
+            user.LastLogin = DateTime.UtcNow;
+            await base.UpdateUserAsync(user);
+
+            string ipAddress = _contextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
+            Store.Context.AuditEvents.Add(new AuditEvent() { UserId = user.Id, EventType = AuditEventType.Login, IPAddress = ipAddress, TriggeredBy = user.Id.ToString() });
+            await Store.Context.SaveChangesAsync();
         }
 
         /// <summary>

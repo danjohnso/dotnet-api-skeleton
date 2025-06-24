@@ -14,13 +14,13 @@
         public static readonly Problem Conflict = new("ERR1007", "There was a conflict while updating the resource");
         public static readonly Problem Deleted = new("ERR1008", "Resource is no longer available");
 
-        public static readonly Problem FieldRequired = new("ERR2000", "'{0}' is required");
-        public static readonly Problem FieldMaxLength = new("ERR2001", "'{0}' cannot be longer than '{1}' characters");
-        public static readonly Problem FieldEmail = new("ERR2002", "'{0}' does not look like a valid email address");
-        public static readonly Problem FieldInEnum = new("ERR2003", "'{0}' is not in the list of a valid values");
-        public static readonly Problem FieldInclusiveRange = new("ERR2004", "'{0}' must be greater than or equal to '{1}' and less than or equal to '{2}'");
-        public static readonly Problem FieldExclusiveRange = new("ERR2005", "'{0}' must be greater than '{1}' and less than '{2}'");
-        public static readonly Problem FieldExactLength = new("ERR2006", "'{0}' must be '{1}' characters long");
+        public static readonly Problem FieldRequired = new("ERR2000", "'{PropertyName}' is required");
+        public static readonly Problem FieldMinLength = new("ERR2001", "'{PropertyName}' must be at least '{MinLength}' characters");
+        public static readonly Problem FieldMaxLength = new("ERR2002", "'{PropertyName}' cannot be longer than '{MaxLength}' characters");
+        public static readonly Problem FieldEmail = new("ERR2003", "'{PropertyName}' does not look like a valid email address");
+        public static readonly Problem FieldInEnum = new("ERR2004", "'{PropertyValue}' is not in the list of a valid values for '{PropertyName}'");
+        public static readonly Problem FieldInclusiveRange = new("ERR2005", "'{PropertyName}' must be greater than or equal to '{From}' and less than or equal to '{To}'");
+        public static readonly Problem FieldExclusiveRange = new("ERR2006", "'{PropertyName}' must be greater than '{From}' and less than '{To}'");
         public static readonly Problem FileEmpty = new("ERR2007", "File was empty");
         public static readonly Problem FileTooLarge = new("ERR2008", "File must be less than or equal to {0}mb");
         public static readonly Problem FileTypeInvalid = new("ERR2009", "File type is not allowed");
