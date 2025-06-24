@@ -2,8 +2,8 @@
 {
     public static class ProblemDetailsConstants
     {
-        public const string TraceIdKey = "TraceId";
-        public const string ErrorsKey = "Errors";
+        public const string TraceIdKey = "traceId";
+        public const string ErrorsKey = "errors";
         public const string ContentType = "application/problem+json";
 
         public const string Status400Uri = "https://www.ietf.org/rfc/rfc9110.html#section-15.5.1";
