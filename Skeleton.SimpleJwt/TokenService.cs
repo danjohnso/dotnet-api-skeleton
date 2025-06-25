@@ -25,7 +25,7 @@ namespace Skeleton.SimpleJwt
         private readonly AppUserManager _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly SimpleJwtOptions _jwtOptions;
-        private readonly JwtSecurityTokenHandler _tokenHandler = new();
+        private readonly JwtSecurityTokenHandler _tokenHandler;
         private readonly TokenValidationParameters _tokenValidationParameters;
         private readonly SigningCredentials _signingCredentials;
 
@@ -39,7 +39,9 @@ namespace Skeleton.SimpleJwt
             _tokenValidationParameters = jwtBearerOptions.Get(JwtBearerDefaults.AuthenticationScheme).TokenValidationParameters;
 
             SymmetricSecurityKey signingKey = new(Encoding.UTF8.GetBytes(_jwtOptions.CurrentSigningKey));
-            _signingCredentials = new(signingKey, SecurityAlgorithms.HmacSha512);
+            _signingCredentials = new(signingKey, SecurityAlgorithms.HmacSha256); //key length check in the servicecollectionextensions is tied to the algorithm used here
+
+            _tokenHandler = new();
         }
 
         public async Task<IResult> LoginAsync(LoginRequest request)
@@ -98,7 +100,6 @@ namespace Skeleton.SimpleJwt
                 return Results.Unauthorized();
             }
 
-#warning might need to consider a mechanism to cleanup expired tokens thet never get attempted
             //cleanup the token after validation, its either valid or it gets used
             await _userManager.RemoveAuthenticationTokenAsync(user, SimpleJwtConstants.Provider, SimpleJwtConstants.MfaLoginTokenType);
 
@@ -150,12 +151,14 @@ namespace Skeleton.SimpleJwt
                 return Results.Unauthorized();
             }
 
+            // this check normally happens as a part of CheckPasswordSignInAsync and TwoFactorSignInAsync
             if (!await _signInManager.CanSignInAsync(user))
             {
                 _logger.LogInformation("Account is not confirmed and cannot refresh: {Email}", user.Email);
                 return Results.Unauthorized();
             }
 
+            // this check normally happens as a part of CheckPasswordSignInAsync and TwoFactorSignInAsync
             if (await _userManager.IsLockedOutAsync(user))
             {
                 _logger.LogWarning("Locked out users cannot refresh: {Email}", user.Email);
@@ -195,13 +198,14 @@ namespace Skeleton.SimpleJwt
         private async Task<TokenResponse> GenerateTokensAsync(User user)
         {
             // Should always regenerate refresh token with the access token to minimize risk of replay attacks.
-            string accessToken = await GenerateAccessTokenAsync(user);
-            string refreshToken = await GenerateRefreshTokenAsync(user);
+            SimpleToken accessToken = GenerateAccessToken(user);
+            SimpleToken refreshToken = await GenerateRefreshTokenAsync(user);
             return new(accessToken, refreshToken);
         }
 
         private async Task RevokeTokensAsync(User user)
         {
+            await _userManager.RemoveAuthenticationTokenAsync(user, SimpleJwtConstants.Provider, SimpleJwtConstants.MfaLoginTokenType);
             await _userManager.RemoveAuthenticationTokenAsync(user, SimpleJwtConstants.Provider, SimpleJwtConstants.RefreshTokenType);
 
             // Clear refresh token from cache
@@ -250,7 +254,7 @@ namespace Skeleton.SimpleJwt
             return isValid;
         }
 
-        private async Task<string> GenerateAccessTokenAsync(User user)
+        private SimpleToken GenerateAccessToken(User user)
         {
             List<Claim> claims =
             [
@@ -259,7 +263,7 @@ namespace Skeleton.SimpleJwt
                 new Claim(SimpleJwtConstants.TokenTypeClaim, SimpleJwtConstants.AccessTokenType)
             ];
 
-            claims.AddRange(await _userManager.GetClaimsAsync(user));
+            //claims.AddRange(await _userManager.GetClaimsAsync(user));
 
             DateTime expires = DateTime.UtcNow.AddMinutes(_jwtOptions.AccessTokenExpirationMinutes);
             JwtSecurityToken token = new(
@@ -272,7 +276,7 @@ namespace Skeleton.SimpleJwt
 
             string tokenString = _tokenHandler.WriteToken(token);
             //not going to store or cache these since these are short lived
-            return tokenString;
+            return new(tokenString, new DateTimeOffset(expires).ToUnixTimeMilliseconds());
         }
 
         private string GenerateMfaTokenAsync(User user)
@@ -298,7 +302,7 @@ namespace Skeleton.SimpleJwt
             return tokenString;
         }
 
-        private async Task<string> GenerateRefreshTokenAsync(User user)
+        private async Task<SimpleToken> GenerateRefreshTokenAsync(User user)
         {
             List<Claim> claims =
             [
@@ -327,10 +331,10 @@ namespace Skeleton.SimpleJwt
                 SlidingExpiration = TimeSpan.FromDays(1)
             });
 
-            return tokenString;
+            return new(tokenString, new DateTimeOffset(expires).ToUnixTimeMilliseconds());
         }
 
-        private async Task<bool> ValidateTokenAsync(string token, string expectedTokenType)
+        internal async Task<bool> ValidateTokenAsync(string token, string expectedTokenType)
         {
             TokenValidationResult tokenValidationResult = await _tokenHandler.ValidateTokenAsync(token, _tokenValidationParameters);
             if (!tokenValidationResult.IsValid)

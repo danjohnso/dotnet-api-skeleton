@@ -19,6 +19,9 @@ namespace Skeleton.SimpleJwt
             services.AddMemoryCache();
             services.AddScoped<TokenService>();
 
+            //cleanup invalid UserTokens
+            services.AddHostedService<TokenExpirationHostedService>();
+
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -33,14 +36,25 @@ namespace Skeleton.SimpleJwt
 
                 options.Authority = jwtOptions.Issuer;
                 options.Audience = jwtOptions.Audience;
+                options.MapInboundClaims = false;
 
                 List<SymmetricSecurityKey> keys = [
                     new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.CurrentSigningKey))
                 ];
 
+                if (keys[0].KeySize < 256)
+                {
+                    throw new InvalidOperationException("'CurrentSigningKey' must be at least 256 bits.");
+                }
+
                 if (jwtOptions.PreviousSigningKey is not null)
                 {
                     keys.Add(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.PreviousSigningKey)));
+
+                    if (keys[1].KeySize < 256)
+                    {
+                        throw new InvalidOperationException("'PreviousSigningKey' must be at least 256 bits.");
+                    }
                 }
 
                 options.TokenValidationParameters = new TokenValidationParameters
