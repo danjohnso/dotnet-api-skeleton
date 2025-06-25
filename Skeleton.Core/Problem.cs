@@ -1,4 +1,6 @@
-﻿namespace Skeleton.Core
+﻿using System.Text.Json.Serialization;
+
+namespace Skeleton.Core
 {
-    public record Problem(string Code, string Message);
+    public record Problem([property: JsonPropertyName("code")] string Code, [property: JsonPropertyName("message")] string Message);
 }
