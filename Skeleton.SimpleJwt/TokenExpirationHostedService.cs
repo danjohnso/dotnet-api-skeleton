@@ -41,7 +41,7 @@ namespace Skeleton.SimpleJwt
                 
                 foreach (IdentityUserToken<Guid> token in refreshTokens)
                 {
-                    if (token.Value.IsWhiteSpace() || !await tokenService.ValidateTokenAsync(token.Value, SimpleJwtConstants.MfaLoginTokenType))
+                    if (token.Value.IsWhiteSpace() || !await tokenService.ValidateTokenAsync(token.Value, SimpleJwtConstants.RefreshTokenType))
                     {
                         userStore.Context.UserTokens.Remove(token);
                     }
