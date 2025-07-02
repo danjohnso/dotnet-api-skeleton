@@ -6,7 +6,7 @@ using Skeleton.Identity.Entities;
 namespace Skeleton.Identity
 {
 	public class AppIdentityContext(DbContextOptions<AppIdentityContext> options) 
-        : IdentityUserContext<User, Guid, IdentityUserClaim<Guid>, IdentityUserLogin<Guid>, IdentityUserToken<Guid>>(options)
+        : IdentityUserContext<User, Guid, IdentityUserClaim<Guid>, IdentityUserLogin<Guid>, UserToken>(options)
 	{
         public DbSet<AuditEvent> AuditEvents { get; set; }
         public DbSet<PreviousPassword> PreviousPasswords { get; set; }
@@ -17,9 +17,9 @@ namespace Skeleton.Identity
 
             //custom types
 	        builder.Entity<User>().Map();
+            builder.Entity<UserToken>().Map();
 
             //default types
-            builder.Entity<IdentityUserToken<Guid>>().ToTable("UserToken");
             builder.Entity<IdentityUserClaim<Guid>>().ToTable("UserClaim");
             builder.Entity<IdentityUserLogin<Guid>>().ToTable("UserLogin");
 

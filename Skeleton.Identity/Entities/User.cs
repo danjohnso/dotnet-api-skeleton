@@ -25,7 +25,7 @@ namespace Skeleton.Identity.Entities
         public ICollection<AuditEvent> AuditEvents { get; } = [];
         public ICollection<IdentityUserClaim<Guid>> Claims { get; } = [];
         public ICollection<IdentityUserLogin<Guid>> Logins { get; } = [];
-        public ICollection<IdentityUserToken<Guid>> Tokens { get; set; } = [];
+        public ICollection<UserToken> Tokens { get; set; } = [];
         public ICollection<PreviousPassword> PreviousPasswords { get; } = [];
         #endregion
     }

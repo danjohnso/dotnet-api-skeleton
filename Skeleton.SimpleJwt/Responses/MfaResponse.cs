@@ -2,6 +2,6 @@
 {
     public class MfaResponse
     {
-        public bool TwoFactorRequired { get; set; }
+        public required string Token { get; set; }
     }
 }

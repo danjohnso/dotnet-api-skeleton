@@ -8,7 +8,7 @@ using Skeleton.Identity.Entities;
 
 namespace Skeleton.Identity
 {
-	public static class IdentityDatabaseRegistration
+	public static class ServiceCollectionExtensions
     {
         /// <summary>
         /// Adds references to AppIdentityContext
@@ -51,7 +51,7 @@ namespace Skeleton.Identity
             return services.AddIdentityCore<User>(AppIdentityOptions.DefaultIdentitySetup)
                         .AddEntityFrameworkStores<AppIdentityContext>()
                         .AddUserManager<AppUserManager>()
-                        .AddSignInManager<AppSignInManager>()
+                        .AddSignInManager()
                         .AddUserStore<AppUserStore>()
                         .AddDefaultTokenProviders()
                         .AddPasswordValidator<RepeatingCharacterPasswordValidator<User>>();

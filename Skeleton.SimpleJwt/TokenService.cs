@@ -68,10 +68,8 @@ namespace Skeleton.SimpleJwt
 
                     //I think to make this stateless we need to generate a temp token with the email address
                     //save it to user tokens and then check for it in the MFA endpoint
-                    string mfaToken = GenerateMfaTokenAsync(user);
-                    await _userManager.SetAuthenticationTokenAsync(user, SimpleJwtConstants.Provider, SimpleJwtConstants.MfaLoginTokenType, mfaToken);
-
-                    return Results.Ok(new MfaResponse { TwoFactorRequired = true });
+                    string mfaToken = await GenerateMfaTokenAsync(user);
+                    return Results.Ok(new MfaResponse { Token = mfaToken });
                 }
 
                 _logger.LogWarning("Signin failed for {Email}: {Reason}", user.Email, result.IsLockedOut ? "Locked" : "Not Allowed");
@@ -86,28 +84,42 @@ namespace Skeleton.SimpleJwt
 
         public async Task<IResult> MfaAsync(MfaRequest request)
         {
-            User? user = await _userManager.FindByEmailAsync(request.EmailAddress);
-            if (user == null)
+            IDictionary<string, object>? tokenClaims = await CrackTokenAsync(request.Token, SimpleJwtConstants.MfaLoginTokenType);
+            if (tokenClaims is null)
             {
-                _logger.LogWarning("Request for invalid email at MFA endpoint: {Email}", request.EmailAddress);
+                _logger.LogWarning("Invalid MFA token");
+                return Results.Unauthorized();
+            }
+
+            string? email = tokenClaims.FirstOrDefault(x => x.Key == JwtRegisteredClaimNames.Email).Value.ToString();
+            if (email is null)
+            {
+                _logger.LogWarning("Invalid MFA token");
+                return Results.Unauthorized();
+            }
+
+            User? user = await _userManager.FindByEmailAsync(email);
+            if (user is null)
+            {
+                _logger.LogWarning("Valid MFA token with email claim, but no user.  Tampering or corrupt token? {Email}", email);
                 return Results.Unauthorized();
             }
 
             string? token = await _userManager.GetAuthenticationTokenAsync(user, SimpleJwtConstants.Provider, SimpleJwtConstants.MfaLoginTokenType);
             if (token is null)
             {
-                _logger.LogInformation("No MFA token for user: {Email}", request.EmailAddress);
+                _logger.LogInformation("MFA token expired or missing for user: {Email}", email);
+                return Results.Unauthorized();
+            }
+
+            if (token != request.Token.Sha512())
+            {
+                _logger.LogInformation("MFA token does not match for user: {Email}", email);
                 return Results.Unauthorized();
             }
 
             //cleanup the token after validation, its either valid or it gets used
             await _userManager.RemoveAuthenticationTokenAsync(user, SimpleJwtConstants.Provider, SimpleJwtConstants.MfaLoginTokenType);
-
-            if (!await ValidateTokenAsync(token, SimpleJwtConstants.MfaLoginTokenType))
-            {
-                _logger.LogWarning("Invalid MFA token for user: {Email}", request.EmailAddress);
-                return Results.Unauthorized();
-            }
 
             SignInResult result = await _signInManager.TwoFactorSignInAsync(TokenOptions.DefaultAuthenticatorProvider, request.Code, isPersistent: false, rememberClient: false);
             if (!result.Succeeded)
@@ -191,7 +203,14 @@ namespace Skeleton.SimpleJwt
                 return Results.Unauthorized();
             }
 
-            await RevokeTokensAsync(user);
+            //clear tokens from db
+            await _userManager.RemoveAuthenticationTokenAsync(user, SimpleJwtConstants.Provider, SimpleJwtConstants.MfaLoginTokenType);
+            await _userManager.RemoveAuthenticationTokenAsync(user, SimpleJwtConstants.Provider, SimpleJwtConstants.RefreshTokenType);
+
+            //clear tokens from cache
+            string cacheKey = $"token:{SimpleJwtConstants.RefreshTokenType}:{user.Id}";
+            _cache.Remove(cacheKey);
+
             return Results.Ok();
         }
 
@@ -201,16 +220,6 @@ namespace Skeleton.SimpleJwt
             SimpleToken accessToken = GenerateAccessToken(user);
             SimpleToken refreshToken = await GenerateRefreshTokenAsync(user);
             return new(accessToken, refreshToken);
-        }
-
-        private async Task RevokeTokensAsync(User user)
-        {
-            await _userManager.RemoveAuthenticationTokenAsync(user, SimpleJwtConstants.Provider, SimpleJwtConstants.MfaLoginTokenType);
-            await _userManager.RemoveAuthenticationTokenAsync(user, SimpleJwtConstants.Provider, SimpleJwtConstants.RefreshTokenType);
-
-            // Clear refresh token from cache
-            string cacheKey = $"token:{SimpleJwtConstants.RefreshTokenType}:{user.Id}";
-            _cache.Remove(cacheKey);
         }
 
         private async Task<bool> ValidateRefreshTokenAsync(User user, string refreshToken)
@@ -250,6 +259,12 @@ namespace Skeleton.SimpleJwt
                     SlidingExpiration = TimeSpan.FromDays(1)
                 });
             }
+            else
+            {
+                //need to remove the cache and db entry if the token is not valid
+                _cache.Remove(cacheKey);
+                await _userManager.RemoveAuthenticationTokenAsync(user, SimpleJwtConstants.Provider, SimpleJwtConstants.RefreshTokenType);
+            }
 
             return isValid;
         }
@@ -279,7 +294,7 @@ namespace Skeleton.SimpleJwt
             return new(tokenString, new DateTimeOffset(expires).ToUnixTimeMilliseconds());
         }
 
-        private string GenerateMfaTokenAsync(User user)
+        private async Task<string> GenerateMfaTokenAsync(User user)
         {
             List<Claim> claims =
             [
@@ -298,7 +313,11 @@ namespace Skeleton.SimpleJwt
             );
 
             string tokenString = _tokenHandler.WriteToken(token);
-            //not going to store or cache these since these are short lived
+
+            //no cache, leave in db to validate
+            string tokenHash = tokenString.Sha512();
+            await _userManager.SetAuthenticationTokenAsync(user, SimpleJwtConstants.Provider, SimpleJwtConstants.MfaLoginTokenType, tokenHash);
+
             return tokenString;
         }
 
@@ -344,6 +363,24 @@ namespace Skeleton.SimpleJwt
             }
 
             return tokenValidationResult.Claims.Any(c => c.Key == SimpleJwtConstants.TokenTypeClaim && c.Value.ToString() == expectedTokenType);
+        }
+
+        /// <summary>
+        /// This will validate the token and return the claims in it if valid, otherwise null
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="expectedTokenType"></param>
+        /// <returns></returns>
+        internal async Task<IDictionary<string, object>?> CrackTokenAsync(string token, string expectedTokenType)
+        {
+            TokenValidationResult tokenValidationResult = await _tokenHandler.ValidateTokenAsync(token, _tokenValidationParameters);
+            if (!tokenValidationResult.IsValid || !tokenValidationResult.Claims.Any(c => c.Key == SimpleJwtConstants.TokenTypeClaim && c.Value.ToString() == expectedTokenType))
+            {
+                _logger.LogDebug("Token validation failed: {@ValidationResult}", tokenValidationResult);
+                return null;
+            }
+
+            return tokenValidationResult.Claims;
         }
     }
 }

@@ -2,7 +2,7 @@
 {
     public class MfaRequest
     {
-        public required string EmailAddress { get; set; }
+        public required string Token { get; set; }
         public required string Code { get; set; }
     }
 }

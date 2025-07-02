@@ -1,8 +1,8 @@
-using Skeleton.Identity;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Skeleton.Identity;
+using Skeleton.Identity.Entities;
 using Skeleton.SimpleJwt.Extensions;
 
 namespace Skeleton.SimpleJwt
@@ -21,13 +21,13 @@ namespace Skeleton.SimpleJwt
                 AppUserStore userStore = scope.ServiceProvider.GetRequiredService<AppUserStore>();
                 TokenService tokenService = scope.ServiceProvider.GetRequiredService<TokenService>();
 
-                List<IdentityUserToken<Guid>> mfaTokens = await userStore.Context.UserTokens.Where(x => x.LoginProvider == SimpleJwtConstants.Provider && x.Name == SimpleJwtConstants.MfaLoginTokenType).ToListAsync(stoppingToken);
+                List<UserToken> mfaTokens = await userStore.Context.UserTokens.Where(x => x.LoginProvider == SimpleJwtConstants.Provider && x.Name == SimpleJwtConstants.MfaLoginTokenType).ToListAsync(stoppingToken);
 
                 Logger.LogInformation("Checking {TokenCount} MFA tokens", mfaTokens.Count);
 
-                foreach (IdentityUserToken<Guid> token in mfaTokens)
+                foreach (UserToken token in mfaTokens)
                 {
-                    if (token.Value.IsWhiteSpace() || !await tokenService.ValidateTokenAsync(token.Value, SimpleJwtConstants.MfaLoginTokenType))
+                    if (token.Value.IsWhiteSpace() || (token.Expiration.HasValue && token.Expiration < DateTime.UtcNow))
                     {
                         userStore.Context.UserTokens.Remove(token);
                     }
@@ -35,13 +35,13 @@ namespace Skeleton.SimpleJwt
 
                 await userStore.Context.SaveChangesAsync(stoppingToken);
 
-                List<IdentityUserToken<Guid>> refreshTokens = await userStore.Context.UserTokens.Where(x => x.LoginProvider == SimpleJwtConstants.Provider && x.Name == SimpleJwtConstants.RefreshTokenType).ToListAsync(stoppingToken);
+                List<UserToken> refreshTokens = await userStore.Context.UserTokens.Where(x => x.LoginProvider == SimpleJwtConstants.Provider && x.Name == SimpleJwtConstants.RefreshTokenType).ToListAsync(stoppingToken);
 
                 Logger.LogInformation("Checking {TokenCount} refresh tokens", refreshTokens.Count);
-                
-                foreach (IdentityUserToken<Guid> token in refreshTokens)
+
+                foreach (UserToken token in refreshTokens)
                 {
-                    if (token.Value.IsWhiteSpace() || !await tokenService.ValidateTokenAsync(token.Value, SimpleJwtConstants.RefreshTokenType))
+                    if (token.Value.IsWhiteSpace() || (token.Expiration.HasValue && token.Expiration < DateTime.UtcNow))
                     {
                         userStore.Context.UserTokens.Remove(token);
                     }
